@@ -10,15 +10,14 @@ const Scheme = require('./scheme-model')
   }
 */
 const checkSchemeId = async (req, res, next) => {
-    const { id } = req.params
+    const { scheme_id } = req.params
     try {
-        const scheme = await Scheme.findById(id)
+        const scheme = await Scheme.findById(scheme_id)
         if (scheme) {
-            req.scheme = scheme
             next()
         }
         else {
-            res.status(400).json({ message: `scheme with scheme_id ${id} not found` })
+            res.status(404).json({ message: `scheme with scheme_id ${scheme_id} not found` })
         }
     }
     catch (err) {
@@ -35,11 +34,16 @@ const checkSchemeId = async (req, res, next) => {
   }
 */
 const validateScheme = (req, res, next) => {
-    const name = req.body.scheme_name
-    if (!name || typeof name !== 'string' || name.trim() == '') {
+    const { scheme_name } = req.body
+    const failed = !scheme_name 
+                    || typeof scheme_name !== 'string' 
+                    || scheme_name.trim() == ''
+    
+    if (failed) {
         res.status(400).json({ message: 'invalid scheme_name' })
     }
     else {
+        req.body = { scheme_name: scheme_name.trim() } 
         next()
     }
 }
@@ -54,17 +58,18 @@ const validateScheme = (req, res, next) => {
   }
 */
 const validateStep = (req, res, next) => {
-    const instr = req.body.instructions
-    const num = req.body.step_number
-    if (!instructions 
-        || typeof instructions !== 'string' 
-        || instructions.trim() == '' 
-        || isNaN(num) 
-        || typeof num !== 'number' 
-        || num < 1 ) {
-            res.status(400).json({ message: 'invalid step' })
+    const { instructions, step_number } = req.body
+    const failed = !instructions 
+                    || typeof instructions !== 'string' 
+                    || instructions.trim() == '' 
+                    || isNaN(step_number) 
+                    || typeof step_number !== 'number' 
+                    || step_number < 1 
+    if (failed) {
+        res.status(400).json({ message: 'invalid step' })
     }
     else {
+        req.body = { instructions: instructions.trim(), step_number }
         next()
     }
 }
